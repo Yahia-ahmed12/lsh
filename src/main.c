@@ -27,7 +27,7 @@ int history_count = 0;
 int lsh_cd(char **args);
 int lsh_help(char **args);
 int lsh_exit(char **args);
-// الدوال الجديدة اللي هنزودها:
+
 int lsh_pwd(char **args);
 int lsh_echo(char **args);
 int lsh_history(char **args);
@@ -39,20 +39,20 @@ char *builtin_str[] = {
   "cd",
   "help",
   "exit",
-  "pwd",     // زِدنا pwd
-  "echo",    // زِدنا echo
-  "history", // زِدنا history
-  "env"      // زِدنا env
+  "pwd",     
+  "echo",    
+  "history", 
+  "env"      
 };
 
 int (*builtin_func[]) (char **) = {
   &lsh_cd,
   &lsh_help,
   &lsh_exit,
-  &lsh_pwd,     // زِدنا دالة pwd
-  &lsh_echo,    // زِدنا دالة echo
-  &lsh_history, // زِدنا دالة history
-  &lsh_env      // زِدنا دالة env
+  &lsh_pwd,     
+  &lsh_echo,    
+  &lsh_history, 
+  &lsh_env      
 };
 
 int lsh_num_builtins() {
@@ -137,7 +137,7 @@ int lsh_pwd(char **args)
 */
 int lsh_echo(char **args)
 {
-  // لو اليوزر كتب echo لوحدها من غير أي كلام
+
   if (args[1] == NULL) {
     printf("\n");
     return 1;
@@ -335,8 +335,7 @@ void lsh_loop(void)
     printf("> ");
     line = lsh_read_line();
     
-    // الجزء الجديد لحفظ الـ history:
-    // لو السطر مش فاضي، بنخزنه
+    
     if (line != NULL && strlen(line) > 0 && history_count < HISTORY_MAX_SIZE) {
         history_commands[history_count] = strdup(line);
         history_count++;
