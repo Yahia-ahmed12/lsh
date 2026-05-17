@@ -17,26 +17,42 @@
 #include <stdio.h>
 #include <string.h>
 
+#define HISTORY_MAX_SIZE 100
+char *history_commands[HISTORY_MAX_SIZE];
+int history_count = 0;
+
 /*
   Function Declarations for builtin shell commands:
  */
 int lsh_cd(char **args);
 int lsh_help(char **args);
 int lsh_exit(char **args);
-
+// الدوال الجديدة اللي هنزودها:
+int lsh_pwd(char **args);
+int lsh_echo(char **args);
+int lsh_history(char **args);
+int lsh_env(char **args);
 /*
   List of builtin commands, followed by their corresponding functions.
  */
 char *builtin_str[] = {
   "cd",
   "help",
-  "exit"
+  "exit",
+  "pwd",     // زِدنا pwd
+  "echo",    // زِدنا echo
+  "history", // زِدنا history
+  "env"      // زِدنا env
 };
 
 int (*builtin_func[]) (char **) = {
   &lsh_cd,
   &lsh_help,
-  &lsh_exit
+  &lsh_exit,
+  &lsh_pwd,     // زِدنا دالة pwd
+  &lsh_echo,    // زِدنا دالة echo
+  &lsh_history, // زِدنا دالة history
+  &lsh_env      // زِدنا دالة env
 };
 
 int lsh_num_builtins() {
@@ -99,6 +115,68 @@ int lsh_exit(char **args)
   @param args Null terminated list of arguments (including program).
   @return Always returns 1, to continue execution.
  */
+/**
+   @brief Builtin command: print working directory.
+*/
+int lsh_pwd(char **args)
+{
+  char cwd[1024];
+  if (getcwd(cwd, sizeof(cwd)) != NULL) {
+    printf("%s\n", cwd);
+  } else {
+    perror("lsh: pwd error");
+  }
+  return 1;
+}
+
+/**
+   @brief Builtin command: echo arguments.
+*/
+/**
+   @brief Builtin command: echo arguments.
+*/
+int lsh_echo(char **args)
+{
+  // لو اليوزر كتب echo لوحدها من غير أي كلام
+  if (args[1] == NULL) {
+    printf("\n");
+    return 1;
+  }
+
+  int i = 1;
+  while (args[i] != NULL) {
+    printf("%s", args[i]);
+    if (args[i+1] != NULL) {
+      printf(" ");
+    }
+    i++;
+  }
+  printf("\n");
+  return 1;
+}
+/**
+   @brief Builtin command: display history.
+*/
+int lsh_history(char **args)
+{
+  for (int i = 0; i < history_count; i++) {
+    printf(" %d  %s\n", i + 1, history_commands[i]);
+  }
+  return 1;
+}
+
+/**
+   @brief Builtin command: print environment variables.
+*/
+int lsh_env(char **args)
+{
+  extern char **environ;
+  for (int i = 0; environ[i] != NULL; i++) {
+    printf("%s\n", environ[i]);
+  }
+  return 1;
+}
+
 int lsh_launch(char **args)
 {
   pid_t pid;
@@ -256,6 +334,14 @@ void lsh_loop(void)
   do {
     printf("> ");
     line = lsh_read_line();
+    
+    // الجزء الجديد لحفظ الـ history:
+    // لو السطر مش فاضي، بنخزنه
+    if (line != NULL && strlen(line) > 0 && history_count < HISTORY_MAX_SIZE) {
+        history_commands[history_count] = strdup(line);
+        history_count++;
+    }
+
     args = lsh_split_line(line);
     status = lsh_execute(args);
 
